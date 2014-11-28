@@ -5,8 +5,8 @@
     <link href="integration.tests.css" rel="stylesheet" />
 </head>
 <body>
-    <h1>Integration tests for xTags js library</h1>
-    <p>Green succeeded, red failed. <span class="loaded">Library loaded.</span></p>
+    <h1>Integration tests for xTags js library <span class="smaller header-version"></span></h1>
+    <p>Green succeeded, red failed. <span class="loaded smaller">Library loaded.</span></p>
     <p class="working">Working....</p>
     <p class="only-failed-tests-running">
         Some tests have failed the last time this console run.
@@ -26,7 +26,7 @@
 
                 Class.define("Testing.UI.Context", function () {
                     this.printError = function () {
-                        $("." + this.categoryName).append("<div class='error'>" + this.name + " failed: " + this.reason + "</div>");
+                        $("." + this.categoryName).append("<div class='error smaller'>" + this.name + " failed: " + this.reason + "</div>");
                     };
 
                     this.wrapUp = function () {
@@ -63,6 +63,10 @@
                         window.location.reload();
                     });
                 }
+
+                Class.require().property('xTags').then(function() {
+                    $(".header-version").html("v" + xTags.Version());
+                });
             });
         }]);
     </script>
