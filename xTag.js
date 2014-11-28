@@ -2729,12 +2729,17 @@
                         props = propsMatch.match(xTags.propertiesRE);
                     }
 
+                    var pattern = "#{" + matches[1] + "}";
                     try {
                         var dvalue = $.proxy(eval("(function(){ var func = function() { var returned = " + matches[1] + "; return returned;}; return func;})()"), lobj)();
-                        newValue = newValue.replace("#{" + matches[1] + "}", dvalue);
+                        if (newValue === pattern) {
+                            return dvalue;
+                        } else {
+                            newValue = newValue.replace(pattern, dvalue);
+                        }
                     }
                     catch (e) {
-                        newValue = newValue.replace("#{" + matches[1] + "}", e);
+                        newValue = newValue.replace(pattern, e);
                     }
                 }
                 else {
