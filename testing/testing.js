@@ -26,12 +26,17 @@ Class.module("Testing module", [], function () {
         };
     }
 
-    window.Class.define("test.report", function() {
-        if (window["test.report"]) {
-            return window["test.report"];
+    window.Class.define("Test.Report", function() {
+        if (window["Test.Report"]) {
+            return window["Test.Report"];
         }
 
         this.categories = {};
+        this.failedTests = [];
+
+        if (window.localStorage["Test.Report.FailedTests"]) {
+            this.failedTests = JSON.parse(window.localStorage["Test.Report.FailedTests"]);
+        }
 
         this.succeeded = function(name, categoryName) {
             this.categories[categoryName] = this.categories[categoryName]
@@ -43,29 +48,43 @@ Class.module("Testing module", [], function () {
             this.categories[categoryName] = this.categories[categoryName]
                 || { succeeded: 0, failed: 0 };
             ++this.categories[categoryName].failed;
+
+            window.localStorage["Test.Report.RunOnlyFailed"] = 'yes';
+            this.failedTests.push(name);
+            window.localStorage["Test.Report.FailedTests"] = JSON.stringify(this.failedTests);
         };
 
-        window["test.report"] = this;
+        this.runOnlyFailedTests = function() {
+            return window.localStorage["Test.Report.RunOnlyFailed"] === 'yes' && this.failedTests.length > 0;
+        };
+
+        this.runAllTests = function () {
+            window.localStorage.removeItem("Test.Report.RunOnlyFailed");
+            window.localStorage.removeItem("Test.Report.FailedTests");
+        };
+
+        window["Test.Report"] = this;
 
         return this;
     });
 
-    window.Class.define("test.case", function (name, categoryName, test$report) {
-        // Todo : When some fail, run only those, and put an option to disable it
-        // Todo: option to keep or remove UI for failed tests (show only html? find a better way?)
+    window.Class.define("Test.Case", function (name, categoryName, Test$Report) {
+        // Todo : When some fail, run only those, and put an option to disable it - run everything when all failed succeeds
+        // Todo: option to keep or remove UI for failed tests (show only html produced? find a better way?)
 
         var failed = false;
         this.reason = null;
         this.name = name;
         this.categoryName = categoryName;
-        var surface = $("body").append("<div>");
+        var surface = $("body").append("<div class='test-surface'>").find(".test-surface").last();
 
+        // Todo: make those into objects for autocomplete
         add(this, "should.not.be.null", function (o) {
             this.validate(o !== null && typeof (o) !== "undefined", "Value is null or undefined.");
         });
 
         add(this, "should.be.nullOrUndefined", function (o) {
-            this.validate(o === null || typeof (o) === "undefined", "Value is defined.");
+            this.validate(o === null || typeof (o) === "undefined", "Value is defined (it shouldn't).");
         });
 
         add(this, "should.be.null", function (o) {
@@ -77,7 +96,7 @@ Class.module("Testing module", [], function () {
         });
 
         add(this, "should.be.equal", function (o1, o2) {
-            this.validate(o1 === o2, "Values do not match.");
+            this.validate(o1 === o2, "Values do not match. Expected: " + o1 + " - Actual: " + o2);
         });
 
         add(this, "should.be.true", function (o) {
@@ -90,7 +109,7 @@ Class.module("Testing module", [], function () {
 
         add(this, "$", function () {
             window.Class.require().property("$").then(function () {
-                return $(test$results.root);
+                return $(Test$Report.root);
             });
         });
 
@@ -100,20 +119,26 @@ Class.module("Testing module", [], function () {
                 this.reason = reason;
 
                 console.error("'" + this.name + "' assumption failed:" + this.reason);
+
+                $(surface).show();
             }
 
             return this;
         };
 
         this.try = function (theTest) {
+            if (Test$Report.runOnlyFailedTests() && Test$Report.failedTests.indexOf(this.name) === -1) {
+                return this;
+            }
+
             Class.inject(theTest).apply(this, [surface]);
 
             if (failed) {
                 console.error("'" + this.name + "' test failed:" + this.reason);
-                test$report.failed(this.name, this.categoryName);
+                Test$Report.failed(this.name, this.categoryName);
             } else {
                 console.log("'" + this.name + "' test succeeded.");
-                test$report.succeeded(this.name, this.categoryName);
+                Test$Report.succeeded(this.name, this.categoryName);
             }
 
             return this;
@@ -136,7 +161,7 @@ Class.module("Testing module", [], function () {
         return this;
     });
 
-    window.test.when = function (name, init) {
-        return new test.case(window.chain.inject(init));
+    window.Test.when = function (name, categoryName) {
+        return new Test.Case(name, categoryName);
     };
 });

@@ -1,0 +1,52 @@
+﻿body {
+    font-size: 11pt;
+    padding: 20px;
+}
+
+.loaded {
+    background-color: #008000;
+    color: white;
+    font-size: 80%;
+    display: none;
+    padding: 4px;
+}
+
+.success {
+    background-color: #008000;
+}
+
+.failed {
+    background-color: #faa;
+    padding: 8px;
+    font-weight: bold;
+}
+
+.error {
+    background-color: #a00;
+    color: white;
+    font-size: 80%;
+    padding: 4px;
+}
+
+.succeeded-header {
+    color: #008000;
+}
+
+.failed-header {
+    color: #a00;
+}
+
+.results-head {
+    float: right;
+    font-size: 60%;
+    color: white;
+    padding: 4px;
+}
+
+.test-surface {
+    display: none;
+}
+
+.only-failed-tests-running {
+    display: none;
+}

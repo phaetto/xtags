@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Integration tests for xTags js library</title>
+    <link href="integration.tests.css" rel="stylesheet" />
+</head>
+<body>
+    <h1>Integration tests for xTags js library</h1>
+    <p>Green succeeded, red failed. <span class="loaded">Library loaded.</span></p>
+    <p class="working">Working....</p>
+    <p class="only-failed-tests-running">
+        Some tests have failed the last time this console run.
+        Only the failed tests are going to run until they succeed.
+        <a href="javascript:void(0)">Disable this now.</a>
+    </p>
+
+    <h2>Databind <span class="results-head"></span></h2>
+    <div class="databind"></div>
+
+    <script type="text/javascript">
+        ; (function () { window.Class = window.Class || { module: function (e, t, n) { return (new window.Class.Require).module(t).then(function () { window.Class.Modules.push(e); n.injectMe()() }) }, require: function () { return new Class.Require } }; window.Class.Require = window.Class.Require || function () { function n(n) { e[n] = function () { t.push({ name: n, args: arguments }); return this } } var e = this; var t = []; n("property"); n("module"); n("class"); n("custom"); this.then = function (n) { var r = 50; if (!window.Class.Require.RqL) { setTimeout(function () { e.then(n) }, r) } else { var i = window.Class.require(); for (var s = 0; s < t.length; ++s) { i[t[s].name].apply(i, t[s].args) } i.then(n) } return this } } })();
+
+        Class.module("Testing UI module", ['Testing module'], ["Test.Report", function (report) {
+            Class.require().property('$').then(function () {
+                $('.loaded').show();
+
+                Class.define("Testing.UI.Context", function () {
+                    this.printError = function () {
+                        $("." + this.categoryName).append("<div class='error'>" + this.name + " failed: " + this.reason + "</div>");
+                    };
+
+                    this.wrapUp = function () {
+                        var hasAnythingFailed = false;
+
+                        for (var prop in report.categories) {
+                            var header = $("." + prop).prev();
+                            if (report.categories[prop].failed > 0) {
+                                header.addClass("failed");
+                                hasAnythingFailed = true;
+                            }
+
+                            header.find(".results-head").append("<span class='succeeded-header'>Succeeded: "
+                                + report.categories[prop].succeeded
+                                + "</span> // <span class='failed-header'>Failed:"
+                                + report.categories[prop].failed + "</span>");
+                        }
+
+                        $(".working").hide();
+
+                        if (report.runOnlyFailedTests() && !hasAnythingFailed) {
+                            report.runAllTests();
+                            window.location.reload();
+                        }
+                    };
+
+                    return this;
+                });
+
+                if (report.runOnlyFailedTests()) {
+                    $(".only-failed-tests-running").show();
+                    $(".only-failed-tests-running a").click(function() {
+                        report.runAllTests();
+                        window.location.reload();
+                    });
+                }
+            });
+        }]);
+    </script>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="../xTag.js" defer="defer" async="async" type="text/javascript"></script>
+    <script src="testing.js" defer="defer" async="async" type="text/javascript"></script>
+    <script src="tests.js" defer="defer" async="async" type="text/javascript"></script>
+</body>
+</html>
