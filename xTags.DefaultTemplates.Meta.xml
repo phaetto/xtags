@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Library.Definition namespace="Library">
+	<Name>Default templates for xTags library.</Name>
+	<Description>Defines default xTags for different UI interactions. Some of them they are bound to a remote services at MSD (like login), but they can be overrided and customized.</Description>
+	<Text>
+		<h3>About this library</h3>
+		<p>
+			At the moment this library defines an early support of the login services, connected to the login REST service.
+		</p>
+	</Text>
+	<Publisher>Alexander Mantzoukas</Publisher>
+	<Company>Modern Software Design</Company>
+	<Site>http://www.msd.am/xTags/</Site>
+	<Support>http://www.msd.am/xTags/</Support>
+	<Version>0.9.3.10</Version>
+	<Licenses>
+		<Library.License>
+			<data type="text/attribute" name="href"><![CDATA[http://www.opensource.org/licenses/mit-license.php]]></data>
+			<LicenseName>MIT</LicenseName>
+		</Library.License>
+	</Licenses>
+	<Examples>
+		<Library.Example>
+			<Title>
+				How to use the default library
+			</Title>
+			<Description>
+				<p>The default library is meant to be used automatically, and not linked or invoked directly.</p>
+				<MSD.Code.Highlight>
+					<Code class="js">
+						<data type="text/plain">
+							<![CDATA[xtag.Login(); // Will invoke the login UI from the default templates]]>
+						</data>
+					</Code>
+				</MSD.Code.Highlight>
+				<p>You can override this behavior by defining your own default UI:</p>
+				<MSD.Code.Highlight>
+					<Code class="xml">
+						<data type="text/plain">
+							<![CDATA[<?xml version="1.0" encoding="utf-8" ?>
+<Templates>
+
+  ...
+
+  <xTags.DefaultTemplates.xLogin>
+	Custom login. Yuuuhhuuuuu!
+  </xTags.DefaultTemplates.xLogin>
+</Templates>]]>
+</data>
+					</Code>
+				</MSD.Code.Highlight>
+				<p>Or you can define a specific one in a template you develop:</p>
+				<MSD.Code.Highlight>
+					<Code class="xml">
+						<data type="text/plain">
+							<![CDATA[<?xml version="1.0" encoding="utf-8" ?>
+<Templates>
+  <I.Am.A.Template xLogin="I.Am.A.Custom.Login.Template">
+	...
+  </I.Am.A.Template>
+
+  <I.Am.A.Custom.Login.Template>
+	Custom login. Yuuuhhuuuuu!
+  </I.Am.A.Custom.Login.Template>
+</Templates>]]>
+						</data>
+					</Code>
+				</MSD.Code.Highlight>
+			</Description>
+		</Library.Example>
+	</Examples>
+</Library.Definition>

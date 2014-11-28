@@ -1,0 +1,260 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Templates>
+  <!-- Extended default templates -->
+
+  <!--
+		Login scenario
+			- Allows a template to authenticate using modernsoftwaredesign user services
+	-->
+  <xTags.DefaultTemplates.xLogin class="msd-pane-wrapper msd-centered msd-login">
+    <data type="text/css" src="http://xtags.msd.am/xTags/xTags.DefaultTemplates.css" />
+    <div class="msd-pane-inner msd-centered-inner">
+      <a class="msd-pane-inner-close" href="javascript:void(0)">
+        Close<em>X</em>
+        <data type="text/javascript-events">
+          <![CDATA[{
+					click: function(event) {
+						this.MainTag.Delete();
+						event.preventDefault();
+					}
+				}]]>
+        </data>
+      </a>
+      <div class="msd-pane-panel">
+        <label>
+          <span>Username</span>
+          <input type="text" value="" name="MsdUsername">
+            <data type="text/name-value" name="value"><![CDATA[]]></data>
+          </input>
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" value="" name="MsdPassword">
+            <data type="text/name-value" name="value"><![CDATA[]]></data>
+          </input>
+        </label>
+        <button mode="Server" id="xLoginButton" ServerOrigin="http://www.msd.am/Apps/Authentication/">
+          <data type="text/attribute" name="ServerOrigin" domain="localhost"><![CDATA[/Apps/Authentication/]]></data>
+          Login
+          <data type="text/name-value" name="username"><![CDATA[]]></data>
+          <data type="text/name-value" name="password"><![CDATA[]]></data>
+          <data type="text/name-value" name="sessionId"><![CDATA[]]></data>
+          <data type="text/name-value" name="whyFailed"><![CDATA[]]></data>
+          <data type="text/javascript-events">
+            <![CDATA[{
+					    onReady: function() {
+						    // Load a possible session from before
+						    this.GetValues(null, function() {
+							    if (this.getSessionId()) {
+								    // Already logged in
+								    this.MainTag.MainTag.SetSession(this.getSessionId());
+								    this.MainTag.Delete();
+							    }
+							    else
+								    $(this.MainTag.Element).show();
+						    });
+					    },
+					    click: function(event) {
+						    // Using get for now
+						    var loadTag = this.MainTag.CreateSpecialTag("xLoader");
+						    this.MainTag.Append(loadTag);
+						    this.PostValues({ 
+							    username: this.MainTag.MsdUsername.getValue(),
+							    password: this.MainTag.MsdPassword.getValue(),
+							    sessionId: this.GetSession()
+						    }, function() {
+							    // Set the session to the parent tag
+							    if (!this.Data.whyFailed)
+							    {
+								    this.MainTag.MainTag.SetSession(this.getSessionId());
+								    this.MainTag.Delete();
+							    }
+							    else
+							    {
+								    alert('Failed to log-in:\n' + this.Data.whyFailed);
+								    loadTag.Delete();
+							    }
+						    }, function() {
+							    alert('An unexpected error has occured.');
+							    loadTag.Delete();
+						    });
+						    event.preventDefault();
+					    }
+				    }]]>
+          </data>
+        </button>
+      </div>
+    </div>
+  </xTags.DefaultTemplates.xLogin>
+
+  <!-- Default functionality for domain management -->
+  <xTags.DefaultTemplates.xDomainNotAllowed class="msd-pane-wrapper msd-lower-right">
+    <data type="text/css" src="http://xtags.msd.am/xTags/xTags.DefaultTemplates.css" />
+    <div class="msd-pane-inner">
+      <a class="msd-pane-inner-close" href="javascript:void(0)">
+        Close<em>X</em>
+        <data type="text/javascript-events">
+          <![CDATA[{
+					click: function(event) {
+						this.MainTag.Delete();
+						event.preventDefault();
+					}
+				}]]>
+        </data>
+      </a>
+      
+      Some parts have been disabled because of different origin of the file <span name="Filename">(no URI reported)</span>.
+      
+      <a href="javascript:void(0)">
+        Allow
+        <data type="text/javascript-events">
+          <![CDATA[{
+					click: function(event) {
+            xTags.AllowUri(this.MainTag.Data.URI);
+						event.preventDefault();
+            
+            var management = new xTags.DefaultTemplates.xDomainManagement();
+            this.MainTag.Switch(management);
+					}
+				}]]>
+        </data>
+      </a>
+      <a href="javascript:void(0)">
+        Always Block
+        <data type="text/javascript-events">
+          <![CDATA[{
+					click: function(event) {
+            xTags.DenyUri(this.MainTag.Data.URI);
+						event.preventDefault();
+            
+            var management = new xTags.DefaultTemplates.xDomainManagement();
+            this.MainTag.Switch(management);
+					}
+				}]]>
+        </data>
+      </a>
+    </div>
+    <data type="text/javascript-events">
+      <![CDATA[{
+			ready: function(event) {
+        if (this.Data.URI) {
+          $(this.Filename.Element).html(this.Data.URI);
+          $(this.Element).addClass("msd-show");
+        }
+        else {
+            var management = new xTags.DefaultTemplates.xDomainManagement();
+            this.Switch(management);
+        }
+			}
+		}]]>
+    </data>
+  </xTags.DefaultTemplates.xDomainNotAllowed>
+
+  <xTags.DefaultTemplates.xDomainManagement class="msd-pane-wrapper msd-lower-right msd-xdomain-management">
+    <data type="text/css" src="http://xtags.msd.am/xTags/xTags.DefaultTemplates.css" />
+    <div class="msd-pane-inner">
+      <a class="msd-pane-inner-close" href="javascript:void(0)">
+        Close<em>X</em>
+        <data type="text/javascript-events">
+          <![CDATA[{
+					click: function(event) {
+						this.MainTag.Delete();
+						event.preventDefault();
+					}
+				}]]>
+        </data>
+      </a>
+
+      <a href="javascript:void(0)">
+        Manage allowed domains
+        <data type="text/javascript-events">
+          <![CDATA[{
+					click: function(event) {
+						var managementView = new xTags.DefaultTemplates.xDomainManagementView();
+            managementView.Create("body");
+					}
+				}]]>
+        </data>
+      </a>
+
+    </div>
+    
+    <data type="text/javascript-events">
+      <![CDATA[{
+			ready: function(event) {
+        $(this.Element).addClass("msd-show");
+			}
+		}]]>
+    </data>
+  </xTags.DefaultTemplates.xDomainManagement>
+
+  <xTags.DefaultTemplates.xDomainManagementView class="msd-pane-wrapper msd-centered">
+    <data type="text/css" src="http://xtags.msd.am/xTags/xTags.DefaultTemplates.css" />
+    <div class="msd-pane-inner msd-centered-inner">
+      <a class="msd-pane-inner-close" href="javascript:void(0)">
+        Close<em>X</em>
+        <data type="text/javascript-events">
+          <![CDATA[{
+					click: function(event) {
+						this.MainTag.Delete();
+						event.preventDefault();
+					}
+				}]]>
+        </data>
+      </a>
+      <table>
+        <thead>
+          <tr>
+            <th>Uri</th>
+            <th>Allowed</th>
+            <th>Denied</th>
+            <th>Remove</th>
+          </tr>
+        </thead>
+        <tbody name="AllowanceTable">
+          <tr>
+            <td>#{this.uri()}</td>
+            <td>#{this.allow()}</td>
+            <td>#{this.deny()}</td>
+            <td>
+              <a href="#{this.uri()}">
+                [X]
+                <data type="text/javascript-events">
+                    <![CDATA[{
+                  click: function(e) {
+                    e.preventDefault();
+                    
+                    var uri = $(this.Element).attr("href");
+                    xTags.RemoveUriEntry(uri);
+                    for(var i = 0; i < this.MainTag.ObjervableEntries.length; ++i) {
+                      if (this.MainTag.ObjervableEntries[i].uri() == uri) {
+                        this.MainTag.ObjervableEntries.splice(i, 1);
+                        --i;
+                      }
+                    }
+                  }
+                }]]></data>
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div>Uris starting with http://xtags.msd.am/ are always allowed.</div>
+    </div>
+    <data type="text/javascript-events">
+      <![CDATA[{
+			ready: function(event) {
+        this.ObjervableEntries = xTags.Observable(xTags.GetAllEntries());
+        this.AllowanceTable.Databind(this.ObjervableEntries);
+        
+        $(this.Element).addClass("msd-show");
+			}
+		}]]>
+    </data>
+  </xTags.DefaultTemplates.xDomainManagementView>
+
+  <data>
+    <library-info src="http://xtags.msd.am/xTags/xTags.DefaultTemplates.Meta.xml" />
+  </data>
+
+</Templates>
