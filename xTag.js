@@ -1017,7 +1017,6 @@
         this.SendValues = function(data, onload, onerror, method) {
             if (this.Mode !== xTags.Mode.Server)
                 throw new Error("Tag " + this.GetId() + " is not set as a server tag.");
-            console.log("1: " + this.ServerOrigin);
 
             if (!this.Token && (!data || !data["xtags-token"])) {
                 // Need to make an ajax get to find the token first
