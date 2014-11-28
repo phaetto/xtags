@@ -787,10 +787,6 @@
         };
         this.RebindDataValue = function(property, newValue) {
             this.Data[property] = xTags.ReplaceBindings(this.DefaultData[property], newValue, this, null, null, property);
-            if (this.Element && this.Attributes[property]) {
-                this.Attributes[property] = this.Data[property];
-                $(this.Element).attr(property, this.Attributes[property]);
-            }
         };
         this.RebindStructure = function(newValue) {
             this.Databind(newValue);
