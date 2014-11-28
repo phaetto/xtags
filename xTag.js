@@ -854,7 +854,7 @@
                                         if (totalChildIndex < this.Children.length) {
                                             this.Children[totalChildIndex].DataObject = boundObj[j];
                                         } else {
-                                            var cTag = xTags.MakeTemplateNode(null, nodeToReproduce.childNodes[i], this.MainTag, this, this.RootTag);
+                                            var cTag = xTags.MakeTemplateNode(null, nodeToReproduce.childNodes[i], this.MainTag || this, this, this.RootTag);
                                             if (cTag) {
                                                 cTag.DataObject = boundObj[j];
                                                 this.Append(cTag);
@@ -882,7 +882,7 @@
                                     if (xmlIndex < this.Children.length) {
                                         this.Children[xmlIndex].DataObject = null;
                                     } else {
-                                        var cTag = xTags.MakeTemplateNode(null, nodeToReproduce.childNodes[i], this.MainTag, this, this.RootTag);
+                                        var cTag = xTags.MakeTemplateNode(null, nodeToReproduce.childNodes[i], this.MainTag || this, this, this.RootTag);
                                         if (hasBeenDatasourced)
                                             cTag.DataObject = boundObj;
                                         if (cTag) {
@@ -895,8 +895,6 @@
                         }
                     }
                 }
-
-                this.TriggerEvent('onDatabind');
             } else if (boundObj === null) {
                 // Unbind values, attributes, text and children with datasource
 
@@ -922,9 +920,9 @@
                         this.Children[i].Delete();
                     }
                 }
-
-                this.TriggerEvent('onDatabind');
             }
+
+            this.TriggerEvent('onDatabind');
 
             for (var i = 0; i < this.Children.length; ++i) {
                 this.Children[i].Databind();
@@ -1886,6 +1884,10 @@
                         tag.TagName = "div";
                         tag.xTemplate = xmlNode.tagName;
                         mainTag = tag;
+
+                        if (!xTags.Templates[tag.xTemplate]) {
+                            throw new Error("Name '" + mainTag.xTemplate + "' does nto exists as a template.");
+                        }
                     }
                     else
                         tag.MainTag = mainTag;
