@@ -32,11 +32,12 @@
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     // Base definitions: classes, dependency injection, promises and requirement patterns
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    /* Use this code to safely load async 'require' and requirements:
-    (window.require=window.require||function(b){var a=50;if(!window.RqL){setTimeout(function(){window.require(b,function(){return 1},a)},a)}else{b()}})(function(){
-    });
-    */
+
+    // Usage
+    // Class.require().property("prop.er.ty").module("Module name").class("aClass").then(function() {})
+    // new Class.Require().property("prop.er.ty").module("Module name").class("aClass").then(function() {})
+    // Add module: Class.module("My js module", ["required module"], [..., function() {}])
+    // ;(function(){window.Class=window.Class||{module:function(e,t,n){return(new window.Class.Require).module(t).then(function(){window.Class.Modules.push(e);n.injectMe()()})},require:function(){return new Class.Require}};window.Class.Require=window.Class.Require||function(){function n(n){e[n]=function(){t.push({name:n,args:arguments});return this}}var e=this;var t=[];n("property");n("module");n("class");n("custom");this.then=function(n){var r=50;if(!window.Class.Require.RqL){setTimeout(function(){e.then(n)},r)}else{var i=window.Class.require();for(var s=0;s<t.length;++s){i[t[s].name].apply(i,t[s].args)}i.then(n)}return this}}})();
 
     function navigateToObject(name) {
         var obj = window;
@@ -56,7 +57,7 @@
         return obj[values[values.length - 1]];
     }
 
-    window.Class = {};
+    window.Class = window.Class || {};
 
     window.Class.getClass = function (name) {
         if (typeof (name) !== "string") {
@@ -110,7 +111,20 @@
             func.prototype.base = rootFunc;
         }
 
+        this.map(name, func);
+
         return func;
+    };
+
+    window.Class.module = function (name, modulesRequired, callback) {
+        return new window.Class.Require().module(modulesRequired).then(function () {
+            window.Class.Modules.push(name);
+            (callback.injectMe())();
+        });
+    };
+
+    window.Class.require = function () {
+        return new Class.Require();
     };
 
     (function () {
@@ -124,9 +138,45 @@
 
         window.Class.inject = function (func) {
 
-            if (func.isInjectionWrapped)
+            function injectActualObjectsToArguments(parametersToInject, _arguments) {
+                var newParams = [];
+                for (var i = 0; i < parametersToInject.length; ++i) {
+                    var className = parametersToInject[i].replace(dotReplace, ".");
+
+                    if (typeof (customInjectionHash[className]) === "function") {
+                        newParams[i] = new customInjectionHash[className]();
+                    } else {
+                        var classFunc = Class.getClass(className);
+                        if (classFunc) {
+                            if (typeof (classFunc) === "function" && className.indexOf('.') > -1)
+                                newParams[i] = new classFunc();
+                            else
+                                newParams[i] = classFunc;
+                        } else {
+                            newParams[i] = _arguments[i];
+                        }
+                    }
+                }
+                return newParams;
+            }
+
+            if (typeof (func) !== "function" && typeof (func.length) === "number") {
+                var array = func;
+                var resultFromArray = function () {
+                    var funcToInjectFromArray = array[array.length - 1];
+                    array.splice(array.length - 1, 1);
+                    array = injectActualObjectsToArguments(array, arguments);
+                    return funcToInjectFromArray.apply(this, array);
+                };
+
+                resultFromArray.isInjectionWrapped = true;
+                return resultFromArray;
+            }
+
+            if (func.isInjectionWrapped) {
                 return func;
-        
+            }
+
             var parameterNames = (function (func) {
                 var funStr = func.toString();
                 funStr = funStr.replace(stripComments, '');
@@ -134,24 +184,7 @@
             })(func);
 
             var result = function () {
-                var params = [];
-                for (var i = 0; i < parameterNames.length; ++i) {
-                    var className = parameterNames[i].replace(dotReplace, ".");
-
-                    if (typeof (customInjectionHash[className]) === "function") {
-                        params[i] = new customInjectionHash[className]();
-                    } else {
-                        var classFunc = Class.getClass(className);
-                        if (classFunc && className.indexOf(".") > -1) {
-                            if (typeof (classFunc) === "function")
-                                params[i] = new classFunc();
-                            else
-                                params[i] = classFunc;
-                        } else
-                            params[i] = arguments[i];
-                    }
-                }
-
+                var params = injectActualObjectsToArguments(parameterNames, arguments);
                 return func.apply(this, params);
             };
 
@@ -162,9 +195,13 @@
         Function.prototype.injectMe = function () {
             return window.Class.inject(this);
         };
+
+        Array.prototype.injectMe = function () {
+            return window.Class.inject(this);
+        };
     })();
 
-    window.Class.define("window.Class.promise", function (callback, options) {
+    window.Class.define("window.Class.Promise", function (callback, options) {
         var self = this;
         options = options || {};
         this.callback = callback.injectMe();
@@ -176,7 +213,7 @@
         var hasNormalResolved = false;
         this.when = function (requirement, failureCondition, timeout) {
             if (failed || isResolved)
-                return;
+                return this;
 
             if (typeof (requirement) === "function") {
                 canBeWhenResolved = false;
@@ -193,14 +230,14 @@
                     }
                     self.when(requirement, failureCondition, timeout + 50);
                 }, timeout);
-            } else if (requirement instanceof Class.promise) {
+            } else if (requirement instanceof window.Class.Promise) {
                 this.when(requirement.isResolved, requirement.isFailed, timeout);
             }
             return this;
         };
         this.then = function (nextCallback) {
             if (typeof (nextCallback) === "function")
-                this.futurePromise = new Class.promise(nextCallback);
+                this.futurePromise = new window.Class.Promise(nextCallback);
             else
                 this.futurePromise = nextCallback;
             this.futurePromise.first = this.first;
@@ -268,36 +305,122 @@
     });
 
     Function.prototype.promise = function (options) {
-        return new window.Class.promise(this, options);
+        if (this instanceof window.Class.Promise)
+            return this;
+        return new window.Class.Promise(this, options);
     };
 
-    window.require = function (namesOrCallback, requirement, timeout) {
-        if (typeof (namesOrCallback) === "string")
-            namesOrCallback = [namesOrCallback];
+    Array.prototype.promise = function (options) {
+        return this.injectMe().promise(options);
+    };
 
-        if (typeof (namesOrCallback) === "object" && typeof (namesOrCallback.length) === "number") {
-            return window.require(requirement, function () {
-                for (var i = 0; i < namesOrCallback.length; ++i) {
-                    var o = navigateToObject(namesOrCallback[i]);
-                    if (typeof (o) === "undefined" || o === null)
-                        return false;
+    window.Class.define("window.Class.Require", function () {
+        var properties = [];
+        var modules = [];
+        var classes = [];
+        var customMethods = [];
+        var promise = null;
+
+        function checkIfItCanBeLoaded() {
+            var i;
+
+            for (i = 0; i < properties.length; ++i) {
+                if (typeof navigateToObject(properties[i]) === "undefined") {
+                    return false;
                 }
+            }
 
-                return true;
-            });
+            for (i = 0; i < modules.length; ++i) {
+                if (window.Class.Modules.indexOf(modules[i]) === -1) {
+                    return false;
+                }
+            }
+
+            for (i = 0; i < classes.length; ++i) {
+                if (typeof navigateToObject(classes[i]) !== "function") {
+                    return false;
+                }
+            }
+
+            for (i = 0; i < customMethods.length; ++i) {
+                if (typeof customMethods[i] === "function"
+                    && !customMethods[i]()) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
-        if (typeof (requirement) === "undefined" || requirement === null) {
-            return namesOrCallback.promise().when(function () {
-                return true;
-            }, null, timeout);
-        }
+        this.property = function (propertyOrProperties) {
+            if (typeof propertyOrProperties !== "string"
+                && typeof propertyOrProperties.length === "number") {
+                for (var i = 0; i < propertyOrProperties.length; ++i) {
+                    properties.push(propertyOrProperties[i]);
+                }
+            } else {
+                properties.push(propertyOrProperties);
+            }
 
-        return namesOrCallback.promise().when(requirement, null, timeout);
-    };
+            return this;
+        };
 
-    window.RqL = true;
-    
+        this.module = function (moduleOrModules) {
+            if (typeof moduleOrModules !== "string"
+                && typeof moduleOrModules.length === "number") {
+                for (var i = 0; i < moduleOrModules.length; ++i) {
+                    modules.push(moduleOrModules[i]);
+                }
+            } else {
+                modules.push(moduleOrModules);
+            }
+
+            return this;
+        };
+
+        this.class = function (classOrClasses) {
+            if (typeof classOrClasses !== "string"
+                && typeof classOrClasses.length === "number") {
+                for (var i = 0; i < classOrClasses.length; ++i) {
+                    classes.push(classOrClasses[i]);
+                }
+            } else {
+                classes.push(classOrClasses);
+            }
+
+            return this;
+        };
+
+        this.custom = function (methodOrMethods) {
+            if (typeof methodOrMethods === "object"
+                && typeof methodOrMethods.length === "number") {
+                for (var i = 0; i < methodOrMethods.length; ++i) {
+                    customMethods.push(methodOrMethods[i]);
+                }
+            } else {
+                customMethods.push(methodOrMethods);
+            }
+
+            return this;
+        };
+
+        this.then = function (callback) {
+            if (promise) {
+                return promise;
+            }
+
+            promise = callback.promise().when(checkIfItCanBeLoaded);
+
+            return this;
+        };
+
+        return this;
+    });
+
+    window.Class.Modules = window.Class.Modules || [];
+
+    window.Class.Require.RqL = true;
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     // xTag API and object model
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2780,7 +2903,7 @@
     // JQuery loaded
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    require("jQuery", function () {
+    Class.require().property("jQuery").then(function () {
         xTags.SetJQ(window.jQuery);
     });
 })();
