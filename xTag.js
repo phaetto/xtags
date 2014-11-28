@@ -295,7 +295,7 @@
             return failed;
         };
 
-        var timeout = options.timeout ? options.timeout : 20000;
+        var timeout = options.timeout ? options.timeout : undefined;
         if (typeof (timeout) === "number" && timeout > 0) {
             this.timeoutHandle = setTimeout(function () {
                 self.fail();
