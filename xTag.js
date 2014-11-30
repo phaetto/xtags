@@ -3,7 +3,7 @@
  * xTags javascript library
  * 2012+ Copyright Alexander Mantzoukas, Modern Software Design
  *
- * Version: 0.9.4.0
+ * Version: 0.9.4.1
  * Publisher: Modern Software Design, Alexander Mantzoukas
  * Site: http://www.msd.am/xTags/, Code trust domain: http://xtags.msd.am
  * License: MIT or GPL
@@ -2836,7 +2836,7 @@
         // End from http://help.dottoro.com/ljcilrao.php
 
         Version: function() {
-            return "0.9.4.0";
+            return "0.9.4.1";
         }
     };
 
