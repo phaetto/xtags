@@ -86,7 +86,7 @@ Class.require().module("Testing module").class("Testing.UI.Context").then(["Test
     }).failed(context.printError);
 
     Test.when("Simple databind with datasource and array, then rebind", "databind").try(function (surface) {
-        xTags.AnalyseText("<xml><template><ul datasource='Rows'>  <li>#{this.data()}</li></ul></template></xml>");
+        xTags.AnalyseText("<xml><template><ul datasource='Rows'> <li>static</li> <li>#{this.data()}</li> </ul></template></xml>");
 
         var xtag = xTags.CreateInstance("template");
 
@@ -107,9 +107,11 @@ Class.require().module("Testing module").class("Testing.UI.Context").then(["Test
             ]
         });
 
-        this.should.be.equal(2, xtag.Children[0].Children.length);
-        this.should.be.equal("data-4", xtag.Children[0].Children[0].Children[0].Text);
-        this.should.be.equal("data-5", xtag.Children[0].Children[1].Children[0].Text);
+        this.should.be.equal(4, xtag.Children[0].Children.length);
+        this.should.be.equal("static", xtag.Children[0].Children[0].Children[0].Text);
+        this.should.be.equal("data-4", xtag.Children[0].Children[1].Children[0].Text);
+        this.should.be.equal("static", xtag.Children[0].Children[2].Children[0].Text);
+        this.should.be.equal("data-5", xtag.Children[0].Children[3].Children[0].Text);
     }).failed(context.printError);
 
     Test.when("Input text databind with array / checked field binding", "databind").try(function (surface) {
