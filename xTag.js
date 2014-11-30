@@ -857,11 +857,6 @@
                                             }
                                         }
                                         ++totalChildIndex;
-                                    } else if (nodeToReproduce.childNodes[i].nodeType === 3 || nodeToReproduce.childNodes[i].nodeType === 4) {
-                                        if (i === 0 ||
-                                            nodeToReproduce.childNodes[i - 1].nodeType === 3 ||
-                                            nodeToReproduce.childNodes[i - 1].nodeType === 4)
-                                            ++totalChildIndex;
                                     }
                                 }
                             }
