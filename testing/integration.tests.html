@@ -16,6 +16,7 @@
 
     <h2>Databind <span class="results-head"></span></h2>
     <div class="databind"></div>
+    <div class="injection"></div>
 
     <script type="text/javascript">
         ; (function () { window.Class = window.Class || { module: function (e, t, n) { return (new window.Class.Require).module(t).then(function () { window.Class.Modules.push(e); n.injectMe()() }) }, require: function () { return new Class.Require } }; window.Class.Require = window.Class.Require || function () { function n(n) { e[n] = function () { t.push({ name: n, args: arguments }); return this } } var e = this; var t = []; n("property"); n("module"); n("class"); n("custom"); this.then = function (n) { var r = 50; if (!window.Class.Require.RqL) { setTimeout(function () { e.then(n) }, r) } else { var i = window.Class.require(); for (var s = 0; s < t.length; ++s) { i[t[s].name].apply(i, t[s].args) } i.then(n) } return this } } })();
@@ -39,6 +40,7 @@
                                 hasAnythingFailed = true;
                             }
 
+                            $(".succeeded-header").remove();
                             header.find(".results-head").append("<span class='succeeded-header'>Succeeded: "
                                 + report.categories[prop].succeeded
                                 + "</span> // <span class='failed-header'>Failed:"
@@ -74,6 +76,6 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="../xTag.js" defer="defer" async="async" type="text/javascript"></script>
     <script src="testing.js" defer="defer" async="async" type="text/javascript"></script>
-    <script src="tests.js" defer="defer" async="async" type="text/javascript"></script>
+    <script src="databind.tests.js" defer="defer" async="async" type="text/javascript"></script>
 </body>
 </html>

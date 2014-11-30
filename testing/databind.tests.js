@@ -41,6 +41,77 @@ Class.require().module("Testing module").class("Testing.UI.Context").then(["Test
         this.should.be.equal("data-3", xtag.Children[2].Children[0].Text);
     }).failed(context.printError);
 
+    Test.when("Simple databind with array and then rebind", "databind").try(function (surface) {
+        xTags.AnalyseText("<xml><template><span>#{this.data()}</span></template></xml>");
+
+        var xtag = xTags.CreateInstance("template");
+
+        xtag.Create(surface);
+
+        xtag.Databind([
+            { data: "data-1" },
+            { data: "data-2" },
+            { data: "data-3" }
+        ]);
+
+        xtag.Databind([
+            { data: "data-4" },
+            { data: "data-5" },
+        ]);
+
+        this.should.be.equal(2, xtag.Children.length);
+        this.should.be.equal("data-4", xtag.Children[0].Children[0].Text);
+        this.should.be.equal("data-5", xtag.Children[1].Children[0].Text);
+    }).failed(context.printError);
+
+    Test.when("Simple databind with datasource and array", "databind").try(function(surface) {
+        xTags.AnalyseText("<xml><template><ul datasource='Rows'><li>#{this.data()}</li></ul></template></xml>");
+
+        var xtag = xTags.CreateInstance("template");
+
+        xtag.Create(surface);
+
+        xtag.Databind({
+            Rows: [
+                { data: "data-1" },
+                { data: "data-2" },
+                { data: "data-3" }
+            ]
+        });
+
+        this.should.be.equal(3, xtag.Children[0].Children.length);
+        this.should.be.equal("data-1", xtag.Children[0].Children[0].Children[0].Text);
+        this.should.be.equal("data-2", xtag.Children[0].Children[1].Children[0].Text);
+        this.should.be.equal("data-3", xtag.Children[0].Children[2].Children[0].Text);
+    }).failed(context.printError);
+
+    Test.when("Simple databind with datasource and array, then rebind", "databind").try(function (surface) {
+        xTags.AnalyseText("<xml><template><ul datasource='Rows'>  <li>#{this.data()}</li></ul></template></xml>");
+
+        var xtag = xTags.CreateInstance("template");
+
+        xtag.Create(surface);
+
+        xtag.Databind({
+            Rows: [
+                { data: "data-1" },
+                { data: "data-2" },
+                { data: "data-3" }
+            ]
+        });
+
+        xtag.Databind({
+            Rows: [
+                { data: "data-4" },
+                { data: "data-5" }
+            ]
+        });
+
+        this.should.be.equal(2, xtag.Children[0].Children.length);
+        this.should.be.equal("data-4", xtag.Children[0].Children[0].Children[0].Text);
+        this.should.be.equal("data-5", xtag.Children[0].Children[1].Children[0].Text);
+    }).failed(context.printError);
+
     Test.when("Input text databind with array / checked field binding", "databind").try(function (surface) {
         xTags.AnalyseText("<xml><template><div><input type='checkbox' value='ok' checked='#{this.isChecked() ? true : false}'>"
             + "</input></div></template></xml>");
